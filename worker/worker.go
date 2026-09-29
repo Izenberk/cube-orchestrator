@@ -16,6 +16,10 @@ type Worker struct {
 }
 
 func (w *Worker) CollectStates() {
+	fmt.Println("I collect stats")
+}
+
+func (w *Worker) RunTask() {
 	fmt.Println("I will start or stop a task")
 }
 
