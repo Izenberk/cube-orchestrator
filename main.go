@@ -42,8 +42,8 @@ func main() {
 	fmt.Printf("worker: %v\n", w)
 	w.CollectStates()
 	w.RunTask()
-	w.StartTask()
-	w.StopTask()
+	w.StartTask(t)
+	w.StopTask(t)
 
 	m := manager.Manager{
 		Pending: 	*queue.New(),
