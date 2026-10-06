@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/golang-collections/collections/queue"
-
+	"github.com/Izenberk/cube-orchestrator/stats"
 	"github.com/Izenberk/cube-orchestrator/task"
 )
 
@@ -17,10 +17,16 @@ type Worker struct {
 	Queue 			queue.Queue
 	Db 					map[uuid.UUID]*task.Task
 	TaskCount		int
+	Stats 			*stats.Stats
 }
 
-func (w *Worker) CollectStates() {
-	fmt.Println("I collect stats")
+func (w *Worker) CollectStats() {
+	for {
+			log.Println("Collection stats")
+			w.Stats = stats.GetStats()
+			w.Stats.TaskCount = w.TaskCount
+			time.Sleep(15 * time.Second)
+	}
 }
 
 func (w *Worker) RunTask() task.DockerResult {
