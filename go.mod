@@ -3,6 +3,7 @@ module github.com/Izenberk/cube-orchestrator
 go 1.26.4
 
 require (
+	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 	github.com/google/uuid v1.6.0
@@ -11,10 +12,7 @@ require (
 	github.com/moby/moby/client v0.6.0
 )
 
-require (
-	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
-	github.com/docker/go-connections v0.8.1 // indirect
-)
+require github.com/docker/go-connections v0.8.1 // indirect
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
