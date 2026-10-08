@@ -15,8 +15,8 @@ import (
 
 type Manager struct {
 	Pending						queue.Queue
-	TaskDb						map[string][]*task.Task
-	EventDb						map[string][]*task.TaskEvent
+	TaskDb						map[uuid.UUID]*task.Task
+	EventDb						map[uuid.UUID][]*task.TaskEvent
 	Workers						[]string
 	WorkerTaskMap			map[string][]uuid.UUID
 	TaskWorkerMap			map[uuid.UUID]string
@@ -45,12 +45,12 @@ func (m *Manager) SendWork() {
 		t := te.Task
 		log.Printf("Pulled %v off pending queue\n", t)
 
-		m.EventDb[te.ID.String()] = append(m.EventDb[te.ID.String()], &te)
+		m.EventDb[te.ID] = append(m.EventDb[te.ID], &te)
 		m.WorkerTaskMap[w] = append(m.WorkerTaskMap[w], te.Task.ID)
 		m.TaskWorkerMap[t.ID] = w
 
 		t.State = task.Scheduled
-		m.TaskDb[t.ID.String()] = append(m.TaskDb[t.ID.String()], &t)
+		m.TaskDb[t.ID] = &t
 
 		data, err := json.Marshal(te)
 		if err != nil {
@@ -89,5 +89,63 @@ func (m *Manager) SendWork() {
 }
 
 func (m *Manager) UpdateTasks() {
-	fmt.Println("I will update tasks")
+	for _, worker := range m.Workers {
+		log.Printf("Checking worker %v for task updates", worker)
+		url := fmt.Sprintf("http://%s/tasks", worker)
+		resp, err := http.Get(url)
+		if err != nil {
+			log.Printf("Error connecting to %v: %v\n", worker, err)
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Error sending request: %v\n", err)
+		}
+
+		d := json.NewDecoder(resp.Body)
+		var tasks []*task.Task
+		err = d.Decode(&tasks)
+		if err != nil {
+			log.Printf("Error unmarshalling tasks: %s\n", err.Error())
+		}
+
+			for _, t := range tasks {
+				log.Printf("Attempting to update task %v\n", t.ID)
+
+				task, ok := m.TaskDb[t.ID]
+				if !ok {
+					log.Printf("Task with ID %s not found\n", t.ID)
+					continue
+				}
+
+				if task.State != t.State {
+					task.State = t.State
+				}
+				task.StartTIme = t.StartTIme
+				task.FinishTime = t.FinishTime
+				task.ContainerId = t.ContainerId
+			}
+	}
+}
+
+func (m *Manager) AddTask(te task.TaskEvent) {
+	m.Pending.Enqueue(te)
+}
+
+func New(workers []string) *Manager {
+	taskDb := make(map[uuid.UUID]*task.Task)
+	eventDb := make(map[uuid.UUID][]*task.TaskEvent)
+	workerTaskMap := make(map[string][]uuid.UUID)
+	teskWorkerMap := make(map[uuid.UUID]string)
+	for worker := range workers {
+		workerTaskMap[workers[worker]] = []uuid.UUID{}
+	}
+
+	return &Manager{
+		Pending: 				*queue.New(),
+		Workers: 				workers,
+		TaskDb: 				taskDb,
+		EventDb: 				eventDb,
+		WorkerTaskMap: 	workerTaskMap,
+		TaskWorkerMap: 	teskWorkerMap,
+	}
 }
