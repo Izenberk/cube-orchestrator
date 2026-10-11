@@ -7,11 +7,12 @@ import (
 	"os"
 	"time"
 
+
+	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/google/uuid"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/network"
 	"github.com/moby/moby/client"
-	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/google/uuid"
 )
 
 type State int
@@ -26,17 +27,20 @@ const (
 
 type Task struct {
 	ID						uuid.UUID
-	ContainerId 	string
+	ContainerID 	string
 	Name					string
 	State					State
 	Image					string
 	Memory				int
 	Disk					int
 	ExposedPorts	network.PortSet
+	HostPorts 		network.PortMap
 	PortBindings	map[string]string
 	RestartPolicy	string
 	StartTIme			time.Time
 	FinishTime		time.Time
+	HealthCheck 	string
+	RestartCount 	int
 }
 
 type TaskEvent struct {
@@ -69,8 +73,13 @@ type Docker struct {
 type DockerResult struct {
 	Error 				error
 	Action				string
-	ContainerId		string
+	ContainerID		string
 	Result 				string
+}
+
+type DockerInspectResponse struct {
+	Error 			error
+	Container 	*container.InspectResponse
 }
 
 func NewConfig(t *Task) *Config {
@@ -148,7 +157,7 @@ func (d *Docker) Run() DockerResult {
 		log.Printf("Error streaming logs for container %s: %v\n", resp.ID, err)
 		return DockerResult{
 			Error:				err,
-			ContainerId: 	resp.ID,
+			ContainerID: 	resp.ID,
 			Action: 			"start",
 		}
 	}
@@ -162,7 +171,7 @@ func (d *Docker) Run() DockerResult {
 	return DockerResult{
 		Error: 				nil,
 		Action: 			"start",
-		ContainerId: 	resp.ID,
+		ContainerID: 	resp.ID,
 		Result: 			"success",
 	}
 }
@@ -187,4 +196,16 @@ func (d *Docker) Stop(id string) DockerResult {
 		Action: 		"stop",
 		Result: 		"success",
 	}
+}
+
+func (d *Docker) Inspect(ContainerID string) DockerInspectResponse {
+	dc, _ := client.New(client.FromEnv)
+	ctx := context.Background()
+	resp, err := dc.ContainerInspect(ctx, ContainerID, client.ContainerInspectOptions{})
+	if err != nil {
+		log.Printf("Error inspecting container: %s\n", err)
+		return DockerInspectResponse{Error: err}
+	}
+
+	return DockerInspectResponse{Container: &resp.Container}
 }
