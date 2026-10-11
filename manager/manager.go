@@ -123,7 +123,7 @@ func (m *Manager) updateTasks() {
 				}
 				task.StartTIme = t.StartTIme
 				task.FinishTime = t.FinishTime
-				task.ContainerId = t.ContainerId
+				task.ContainerID = t.ContainerID
 			}
 	}
 }
