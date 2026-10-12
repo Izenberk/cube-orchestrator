@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 	"log"
+	"math"
 	"os"
 	"time"
-
 
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/google/uuid"
@@ -114,6 +114,7 @@ func (d *Docker) Run() DockerResult {
 
 	r := container.Resources{
 		Memory: d.Config.Memory,
+		NanoCPUs: int64(d.Config.Cpu * math.Pow(10, 9)),
 	}
 
 	cc := container.Config{
