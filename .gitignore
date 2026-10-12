@@ -1,2 +1,4 @@
 .env
 cube
+
+task*.json
