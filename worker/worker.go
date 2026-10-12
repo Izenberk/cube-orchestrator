@@ -146,17 +146,20 @@ func (w *Worker) updateTasks() {
 			resp := w.InspectTask(*t)
 			if resp.Error != nil {
 				fmt.Printf("ERROR: %v\n", resp.Error)
+				continue
 			}
 
 			if resp.Container == nil {
 				log.Printf("No container for running task %s\n", id)
 				w.Db[id].State = task.Failed
+				continue
 			}
 
 			if resp.Container.State.Status == "exited" {
 				log.Printf("Container for task %s in non-running state %s",
 					id, resp.Container.State.Status)
 				w.Db[id].State = task.Failed
+				continue
 			}
 
 			w.Db[id].HostPorts = resp.Container.NetworkSettings.Ports
