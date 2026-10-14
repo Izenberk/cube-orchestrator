@@ -120,10 +120,13 @@ func (m *Manager) updateTasks() {
 		resp, err := http.Get(url)
 		if err != nil {
 			log.Printf("Error connecting to %v: %v\n", worker, err)
+			continue
 		}
 
 		if resp.StatusCode != http.StatusOK {
 			log.Printf("Error sending request: %v\n", err)
+			resp.Body.Close()
+			continue
 		}
 
 		d := json.NewDecoder(resp.Body)
@@ -131,9 +134,13 @@ func (m *Manager) updateTasks() {
 		err = d.Decode(&tasks)
 		if err != nil {
 			log.Printf("Error unmarshalling tasks: %s\n", err.Error())
+			continue
 		}
 
 			for _, t := range tasks {
+				if t == nil {
+					continue
+				}
 				log.Printf("Attempting to update task %v\n", t.ID)
 
 				task, ok := m.TaskDb[t.ID]
