@@ -60,8 +60,8 @@ func (a *Api) StopTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tID, _ := uuid.Parse(taskID)
-	taskToStop, ok := a.Manager.TaskDb[tID]
-	if !ok {
+	taskToStop, err := a.Manager.TaskDb.Get(tID.String())
+	if err != nil {
 		log.Printf("No task with ID %v found", tID)
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -71,11 +71,11 @@ func (a *Api) StopTaskHandler(w http.ResponseWriter, r *http.Request) {
 		State: 			task.Completed,
 		Timestamp: 	time.Now(),
 	}
-	taskCopy := *taskToStop
+	taskCopy := *taskToStop.(*task.Task)
 	taskCopy.State = task.Completed
 	te.Task = taskCopy
 	a.Manager.AddTask(te)
 
-	log.Printf("Added task event %v to stop %v\n", te.ID, taskToStop.ID)
+	log.Printf("Added task event %v to stop %v\n", te.ID, taskCopy.ID)
 	w.WriteHeader(http.StatusNoContent)
 }

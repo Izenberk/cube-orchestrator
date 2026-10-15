@@ -60,16 +60,22 @@ func (m *Manager) SendWork() {
 
 		taskWorker, ok := m.TaskWorkerMap[te.Task.ID]
 		if ok {
-			persistedTask := m.TaskDb[te.Task.ID]
-			if te.State == task.Completed &&
-				task.ValidStateTransition(persistedTask.State, te.State) {
-					m.stopTask(taskWorker, te.Task.ID.String())
-					return
-				}
-
-				log.Printf("invalid request: existing task %s is in state %v and cannot transition to the completed state\n",
-					persistedTask.ID.String(), persistedTask.State)
+			result, err := m.TaskDb.Get(te.Task.ID.String())
+			if err != nil {
+				log.Printf("unable to schedule task: %s", err)
 				return
+			}
+
+			persistedTask, ok := result.(*task.Task)
+			if !ok {
+				log.Printf("unable to convert task to task.Task type")
+				return
+			}
+
+			if te.State == task.Completed && task.ValidStateTransition(persistedTask.State, te.State) {
+				m.stopTask(taskWorker, te.Task.ID.String())
+				return
+			}
 		}
 
 		t := te.Task
@@ -82,7 +88,7 @@ func (m *Manager) SendWork() {
 		m.TaskWorkerMap[t.ID] = w.Name
 
 		t.State = task.Scheduled
-		m.TaskDb[t.ID] = &t
+		m.TaskDb.Put(t.ID.String(), &t)
 
 		data, err := json.Marshal(te)
 		if err != nil {
