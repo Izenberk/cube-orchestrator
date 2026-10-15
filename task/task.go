@@ -199,6 +199,18 @@ func (d *Docker) Stop(id string) DockerResult {
 	}
 }
 
+func (d *Docker) Remove(id string) DockerResult {
+	log.Printf("Attempting to remove container %v", id)
+	ctx := context.Background()
+	_, err := d.Client.ContainerRemove(ctx, id, client.ContainerRemoveOptions{RemoveVolumes: true, RemoveLinks: false, Force: false})
+	if err != nil {
+		log.Printf("Error removing container %s: %v\n", id, err)
+		return DockerResult{Error: err}
+	}
+
+	return DockerResult{Action: "remove", Result: "success", Error: nil}
+}
+
 func (d *Docker) Inspect(ContainerID string) DockerInspectResponse {
 	dc, _ := client.New(client.FromEnv)
 	ctx := context.Background()
