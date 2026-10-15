@@ -196,10 +196,13 @@ func New(workers []string, schedulerType string) *Manager {
 		n := node.NewNode(workers[worker], nAPI, "worker")
 		nodes = append(nodes, n)
 	}
+
 	var s scheduler.Scheduler
 	switch schedulerType {
 	case "roundrobin":
 		s = &scheduler.RoundRobin{Name: "roundrobin"}
+	case "epvm":
+		s = &scheduler.Epvm{Name: "epvm"}
 	default:
 		s = &scheduler.RoundRobin{Name: "roundrobin"}
 	}

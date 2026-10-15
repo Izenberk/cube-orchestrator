@@ -16,11 +16,11 @@ type Node struct {
 	Name						string
 	Ip							string
 	Api 						string
-	Cores						int
-	Memory					int
-	MemoryAllocated	int
-	Disk						int
-	DiskAllocated		int
+	Cores						int64
+	Memory					int64
+	MemoryAllocated	int64
+	Disk						int64
+	DiskAllocated		int64
 	Stats 					stats.Stats
 	Role						string
 	TaskCount				int
@@ -66,8 +66,8 @@ func (n *Node) GetStats() (*stats.Stats, error) {
 		return nil, fmt.Errorf("error getting stats from node %s", n.Name)
 	}
 
-	n.Memory = int(stats.MemTotalKb())
-	n.Disk = int(stats.DiskTotal())
+	n.Memory = int64(stats.MemTotalKb())
+	n.Disk = int64(stats.DiskTotal())
 	n.Stats = stats
 
 	return &n.Stats, nil
