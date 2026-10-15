@@ -12,6 +12,7 @@ import (
 
 	"github.com/Izenberk/cube-orchestrator/node"
 	"github.com/Izenberk/cube-orchestrator/scheduler"
+	"github.com/Izenberk/cube-orchestrator/store"
 	"github.com/Izenberk/cube-orchestrator/task"
 	"github.com/Izenberk/cube-orchestrator/worker"
 	"github.com/golang-collections/collections/queue"
@@ -21,8 +22,8 @@ import (
 
 type Manager struct {
 	Pending						queue.Queue
-	TaskDb						map[uuid.UUID]*task.Task
-	EventDb						map[uuid.UUID][]*task.TaskEvent
+	TaskDb						store.Store
+	EventDb						store.Store
 	Workers						[]string
 	WorkerTaskMap			map[string][]uuid.UUID
 	TaskWorkerMap			map[uuid.UUID]string
@@ -48,7 +49,13 @@ func (m *Manager) SendWork() {
 	if m.Pending.Len() > 0 {
 		e := m.Pending.Dequeue()
 		te := e.(task.TaskEvent)
-		m.EventDb[te.ID] = append(m.EventDb[te.ID], &te)
+		err := m.EventDb.Put(te.ID.String(), &te)
+		if err != nil {
+			log.Printf("error attempting to store task event %s: %s\n",
+		te.ID.String(), err)
+			return
+		}
+
 		log.Printf("Pulled %v off pending queue\n", te)
 
 		taskWorker, ok := m.TaskWorkerMap[te.Task.ID]
@@ -143,18 +150,30 @@ func (m *Manager) updateTasks() {
 				}
 				log.Printf("Attempting to update task %v\n", t.ID)
 
-				task, ok := m.TaskDb[t.ID]
+				// task, ok := m.TaskDb[t.ID]
+				// if !ok {
+				// 	log.Printf("Task with ID %s not found\n", t.ID)
+				// 	continue
+				// }
+
+				result, err := m.TaskDb.Get(t.ID.String())
+				if err != nil {
+					log.Printf("[manager] Task with ID %s no found\n", t.ID)
+					continue
+				}
+				taskPersisted, ok := result.(*task.Task)
 				if !ok {
-					log.Printf("Task with ID %s not found\n", t.ID)
+					log.Printf("cannot convert result %v to task.Task type\n", result)
 					continue
 				}
 
-				if task.State != t.State {
-					task.State = t.State
+				if taskPersisted.State != t.State {
+					taskPersisted.State = t.State
 				}
-				task.StartTIme = t.StartTIme
-				task.FinishTime = t.FinishTime
-				task.ContainerID = t.ContainerID
+				taskPersisted.StartTIme = t.StartTIme
+				taskPersisted.FinishTime = t.FinishTime
+				taskPersisted.ContainerID = t.ContainerID
+				taskPersisted.HostPorts = t.HostPorts
 			}
 	}
 }
@@ -182,9 +201,7 @@ func (m *Manager) AddTask(te task.TaskEvent) {
 	m.Pending.Enqueue(te)
 }
 
-func New(workers []string, schedulerType string) *Manager {
-	taskDb := make(map[uuid.UUID]*task.Task)
-	eventDb := make(map[uuid.UUID][]*task.TaskEvent)
+func New(workers []string, schedulerType string, dbType string) *Manager {
 	workerTaskMap := make(map[string][]uuid.UUID)
 	teskWorkerMap := make(map[uuid.UUID]string)
 
@@ -207,16 +224,26 @@ func New(workers []string, schedulerType string) *Manager {
 		s = &scheduler.RoundRobin{Name: "roundrobin"}
 	}
 
-	return &Manager{
+	m := Manager{
 		Pending: 				*queue.New(),
 		Workers: 				workers,
-		TaskDb: 				taskDb,
-		EventDb: 				eventDb,
 		WorkerTaskMap: 	workerTaskMap,
 		TaskWorkerMap: 	teskWorkerMap,
 		WorkerNodes: 		nodes,
 		Scheduler: 			s,
 	}
+
+	var ts store.Store
+	var es store.Store
+	switch dbType {
+	case "memory":
+		ts = store.NewInMemoryTaskStore()
+		es = store.NewInMemoryTaskEventStore()
+	}
+
+	m.TaskDb = ts
+	m.EventDb = es
+	return &m
 }
 
 func (m *Manager) checkTaskHealth(t task.Task) error {
@@ -286,7 +313,7 @@ func (m *Manager) restartTask(t *task.Task) {
 	w := m.TaskWorkerMap[t.ID]
 	t.State = task.Scheduled
 	t.RestartCount++
-	m.TaskDb[t.ID] = t
+	m.TaskDb.Put(t.ID.String(), t)
 
 	te := task.TaskEvent{
 		ID:					uuid.New(),

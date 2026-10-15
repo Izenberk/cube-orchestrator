@@ -38,11 +38,12 @@ func (a *Api) StartTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Manager) GetTasks() []*task.Task {
-	tasks := []*task.Task{}
-	for _, t := range m.TaskDb {
-		tasks = append(tasks, t)
+	taskList, err := m.TaskDb.List()
+	if err != nil {
+		log.Printf("error getting list of tasks: %v\n", err)
+		return nil
 	}
-	return tasks
+	return taskList.([]*task.Task)
 }
 
 func (a *Api) GetTasksHandler(w http.ResponseWriter, r *http.Request) {
