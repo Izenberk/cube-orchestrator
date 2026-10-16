@@ -38,12 +38,22 @@ func (a *Api) StartTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Manager) GetTasks() []*task.Task {
+	if m == nil || m.TaskDb == nil {
+		log.Println("error getting list of tasks: TaskDb is not initialized")
+		return nil
+	}
 	taskList, err := m.TaskDb.List()
 	if err != nil {
 		log.Printf("error getting list of tasks: %v\n", err)
 		return nil
 	}
-	return taskList.([]*task.Task)
+	tasks, ok := taskList.([]*task.Task)
+	if !ok {
+		log.Println("error getting list of tasks: invalid type assertion")
+		return nil
+	}
+
+	return tasks
 }
 
 func (a *Api) GetTasksHandler(w http.ResponseWriter, r *http.Request) {
