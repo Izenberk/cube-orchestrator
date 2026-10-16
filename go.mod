@@ -12,7 +12,10 @@ require (
 	github.com/moby/moby/client v0.6.0
 )
 
-require github.com/docker/go-connections v0.8.1 // indirect
+require (
+	github.com/boltdb/bolt v1.3.1 // indirect
+	github.com/docker/go-connections v0.8.1 // indirect
+)
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
