@@ -176,7 +176,7 @@ func (m *Manager) updateTasks() {
 				if taskPersisted.State != t.State {
 					taskPersisted.State = t.State
 				}
-				taskPersisted.StartTIme = t.StartTIme
+				taskPersisted.StartTime = t.StartTime
 				taskPersisted.FinishTime = t.FinishTime
 				taskPersisted.ContainerID = t.ContainerID
 				taskPersisted.HostPorts = t.HostPorts

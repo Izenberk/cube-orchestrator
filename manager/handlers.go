@@ -67,13 +67,20 @@ func (a *Api) StopTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if taskID == "" {
 		log.Printf("No taskID passed in request.\n")
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	tID, _ := uuid.Parse(taskID)
+	tID, err := uuid.Parse(taskID)
+	if err != nil {
+		log.Printf("Invalid taskID: %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	taskToStop, err := a.Manager.TaskDb.Get(tID.String())
 	if err != nil {
 		log.Printf("No task with ID %v found", tID)
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	te := task.TaskEvent{
@@ -88,4 +95,10 @@ func (a *Api) StopTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Added task event %v to stop %v\n", te.ID, taskCopy.ID)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (a *Api) GetNodesHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(a.Manager.WorkerNodes)
 }
