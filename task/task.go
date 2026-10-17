@@ -15,78 +15,74 @@ import (
 	"github.com/moby/moby/client"
 )
 
-type State int
-
-const (
-	Pending State = iota
-	Scheduled
-	Running
-	Completed
-	Failed
-)
 
 type Task struct {
-	ID						uuid.UUID
-	ContainerID 	string
-	Name					string
-	State					State
-	Image					string
-	Memory				int64
-	Disk					int64
-	ExposedPorts	network.PortSet
-	HostPorts 		network.PortMap
-	PortBindings	map[string]string
-	RestartPolicy	string
-	StartTIme			time.Time
-	FinishTime		time.Time
-	HealthCheck 	string
-	RestartCount 	int
+	ID            uuid.UUID
+	ContainerID   string
+	Name          string
+	State         State
+	Image         string
+	Memory        int64
+	Disk          int64
+	Cpu 					float64
+	ExposedPorts  network.PortSet
+	HostPorts     network.PortMap
+	PortBindings  map[string]string
+	RestartPolicy string
+	StartTime     time.Time
+	FinishTime    time.Time
+	HealthCheck   string
+	RestartCount  int
 }
 
 type TaskEvent struct {
-	ID 					uuid.UUID
-	State				State
-	Timestamp		time.Time
-	Task				Task
+	ID        uuid.UUID
+	State     State
+	Timestamp time.Time
+	Task      Task
 }
 
 type Config struct {
-	Name					string
-	AttachStdin		bool
-	AttachStdout	bool
-	AttachStderr	bool
-	ExposedPorts	network.PortSet
-	Cmd						[]string
-	Image					string
-	Cpu						float64
-	Memory				int64
-	Disk					int64
-	Env 					[]string
-	RestartPolicy	string
+	Name          string
+	AttachStdin   bool
+	AttachStdout  bool
+	AttachStderr  bool
+	ExposedPorts  network.PortSet
+	Cmd           []string
+	Image         string
+	Cpu           float64
+	Memory        int64
+	Disk          int64
+	Env           []string
+	RestartPolicy string
 }
 
 type Docker struct {
-	Client		*client.Client
-	Config 		Config
+	Client *client.Client
+	Config Config
 }
 
 type DockerResult struct {
-	Error 				error
-	Action				string
-	ContainerID		string
-	Result 				string
+	Error       error
+	Action      string
+	ContainerID string
+	Result      string
 }
 
 type DockerInspectResponse struct {
-	Error 			error
-	Container 	*container.InspectResponse
+	Error     error
+	Container *container.InspectResponse
 }
 
 func NewConfig(t *Task) *Config {
 	return &Config{
-		Name:						t.Name,
-		Image:					t.Image,
+		Name:          	t.Name,
+		Image:         	t.Image,
 		RestartPolicy: 	t.RestartPolicy,
+		ExposedPorts: 	t.ExposedPorts,
+		Memory: 				t.Memory,
+		Disk: 					t.Disk,
+		Cpu: 						t.Cpu,
 	}
 }
 
@@ -94,7 +90,7 @@ func NewDocker(c *Config) *Docker {
 	dc, _ := client.New(client.FromEnv)
 	return &Docker{
 		Client: dc,
-		Config:	*c,
+		Config: *c,
 	}
 }
 
@@ -113,27 +109,27 @@ func (d *Docker) Run() DockerResult {
 	}
 
 	r := container.Resources{
-		Memory: d.Config.Memory,
+		Memory:   d.Config.Memory,
 		NanoCPUs: int64(d.Config.Cpu * math.Pow(10, 9)),
 	}
 
 	cc := container.Config{
-		Image: d.Config.Image,
-		Tty: false,
-		Env: d.Config.Env,
+		Image:        d.Config.Image,
+		Tty:          false,
+		Env:          d.Config.Env,
 		ExposedPorts: d.Config.ExposedPorts,
-		Cmd: d.Config.Cmd,
+		Cmd:          d.Config.Cmd,
 	}
 
 	hc := container.HostConfig{
-		RestartPolicy: rp,
-		Resources: r,
+		RestartPolicy:   rp,
+		Resources:       r,
 		PublishAllPorts: true,
 	}
 
 	createOpts := client.ContainerCreateOptions{
-		Name: d.Config.Name,
-		Config: &cc,
+		Name:       d.Config.Name,
+		Config:     &cc,
 		HostConfig: &hc,
 	}
 
@@ -152,14 +148,14 @@ func (d *Docker) Run() DockerResult {
 	out, err := d.Client.ContainerLogs(ctx, resp.ID, client.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
-		Follow: 		true,
+		Follow:     true,
 	})
 	if err != nil {
 		log.Printf("Error streaming logs for container %s: %v\n", resp.ID, err)
 		return DockerResult{
-			Error:				err,
-			ContainerID: 	resp.ID,
-			Action: 			"start",
+			Error:       err,
+			ContainerID: resp.ID,
+			Action:      "start",
 		}
 	}
 
@@ -170,10 +166,10 @@ func (d *Docker) Run() DockerResult {
 	}()
 
 	return DockerResult{
-		Error: 				nil,
-		Action: 			"start",
-		ContainerID: 	resp.ID,
-		Result: 			"success",
+		Error:       nil,
+		Action:      "start",
+		ContainerID: resp.ID,
+		Result:      "success",
 	}
 }
 
@@ -187,15 +183,15 @@ func (d *Docker) Stop(id string) DockerResult {
 	}
 
 	_, err = d.Client.ContainerRemove(ctx, id, client.ContainerRemoveOptions{
-		RemoveVolumes: 	true,
-		RemoveLinks: 		false,
-		Force: 					false,
+		RemoveVolumes: true,
+		RemoveLinks:   false,
+		Force:         false,
 	})
 
 	return DockerResult{
-		Error: 			nil,
-		Action: 		"stop",
-		Result: 		"success",
+		Error:  nil,
+		Action: "stop",
+		Result: "success",
 	}
 }
 
