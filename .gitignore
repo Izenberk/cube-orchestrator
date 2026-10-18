@@ -1,5 +1,7 @@
 .env
-cube
-
+/cube
+/bin/
 task*.json
 *.db
+*.test
+coverage.out
