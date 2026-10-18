@@ -2,8 +2,10 @@ package task
 
 type State int
 
-func (s State) String() []string {
-	return []string{"Pending", "Scheduled", "Running", "Completed", "Failed"}
+var stateNames = [...]string{"Pending", "Scheduled", "Running", "Completed", "Failed"}
+
+func (s State) String() string {
+	return stateNames[s]
 }
 
 const (

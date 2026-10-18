@@ -49,7 +49,7 @@ var statusCmd = &cobra.Command{
 				start = fmt.Sprintf("%s ago", units.HumanDuration(time.Now().Local().Sub(task.StartTime)))
 			}
 
-			state := task.State.String()[task.State]
+			state := task.State.String()
 			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t\n", task.ID, task.Name, start, state, task.Name, task.Image)
 		}
 		w.Flush()
