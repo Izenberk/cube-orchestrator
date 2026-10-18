@@ -21,15 +21,15 @@ import (
 )
 
 type Manager struct {
-	Pending						queue.Queue
-	TaskDb						store.Store
-	EventDb						store.Store
-	Workers						[]string
-	WorkerTaskMap			map[string][]uuid.UUID
-	TaskWorkerMap			map[uuid.UUID]string
-	LastWorker				int
-	WorkerNodes 			[]*node.Node
-	Scheduler 				scheduler.Scheduler
+	Pending       queue.Queue
+	TaskDb        store.Store
+	EventDb       store.Store
+	Workers       []string
+	WorkerTaskMap map[string][]uuid.UUID
+	TaskWorkerMap map[uuid.UUID]string
+	LastWorker    int
+	WorkerNodes   []*node.Node
+	Scheduler     scheduler.Scheduler
 }
 
 func (m *Manager) SelectWorker(t task.Task) (*node.Node, error) {
@@ -52,7 +52,7 @@ func (m *Manager) SendWork() {
 		err := m.EventDb.Put(te.ID.String(), &te)
 		if err != nil {
 			log.Printf("error attempting to store task event %s: %s\n",
-		te.ID.String(), err)
+				te.ID.String(), err)
 			return
 		}
 
@@ -150,37 +150,37 @@ func (m *Manager) updateTasks() {
 			continue
 		}
 
-			for _, t := range tasks {
-				if t == nil {
-					continue
-				}
-				log.Printf("Attempting to update task %v\n", t.ID)
-
-				// task, ok := m.TaskDb[t.ID]
-				// if !ok {
-				// 	log.Printf("Task with ID %s not found\n", t.ID)
-				// 	continue
-				// }
-
-				result, err := m.TaskDb.Get(t.ID.String())
-				if err != nil {
-					log.Printf("[manager] Task with ID %s no found\n", t.ID)
-					continue
-				}
-				taskPersisted, ok := result.(*task.Task)
-				if !ok {
-					log.Printf("cannot convert result %v to task.Task type\n", result)
-					continue
-				}
-
-				if taskPersisted.State != t.State {
-					taskPersisted.State = t.State
-				}
-				taskPersisted.StartTime = t.StartTime
-				taskPersisted.FinishTime = t.FinishTime
-				taskPersisted.ContainerID = t.ContainerID
-				taskPersisted.HostPorts = t.HostPorts
+		for _, t := range tasks {
+			if t == nil {
+				continue
 			}
+			log.Printf("Attempting to update task %v\n", t.ID)
+
+			// task, ok := m.TaskDb[t.ID]
+			// if !ok {
+			// 	log.Printf("Task with ID %s not found\n", t.ID)
+			// 	continue
+			// }
+
+			result, err := m.TaskDb.Get(t.ID.String())
+			if err != nil {
+				log.Printf("[manager] Task with ID %s no found\n", t.ID)
+				continue
+			}
+			taskPersisted, ok := result.(*task.Task)
+			if !ok {
+				log.Printf("cannot convert result %v to task.Task type\n", result)
+				continue
+			}
+
+			if taskPersisted.State != t.State {
+				taskPersisted.State = t.State
+			}
+			taskPersisted.StartTime = t.StartTime
+			taskPersisted.FinishTime = t.FinishTime
+			taskPersisted.ContainerID = t.ContainerID
+			taskPersisted.HostPorts = t.HostPorts
+		}
 	}
 }
 
@@ -231,12 +231,12 @@ func New(workers []string, schedulerType string, dbType string) *Manager {
 	}
 
 	m := Manager{
-		Pending: 				*queue.New(),
-		Workers: 				workers,
-		WorkerTaskMap: 	workerTaskMap,
-		TaskWorkerMap: 	teskWorkerMap,
-		WorkerNodes: 		nodes,
-		Scheduler: 			s,
+		Pending:       *queue.New(),
+		Workers:       workers,
+		WorkerTaskMap: workerTaskMap,
+		TaskWorkerMap: teskWorkerMap,
+		WorkerNodes:   nodes,
+		Scheduler:     s,
 	}
 
 	var ts store.Store
@@ -270,41 +270,41 @@ func (m *Manager) checkTaskHealth(t task.Task) error {
 	log.Printf("Calling health check for task %s: %s\n",
 		t.ID, t.HealthCheck)
 
-		w := m.TaskWorkerMap[t.ID]
-		if w == "" {
-			msg := fmt.Sprintf("Task %s is not assigned to any worker\n", t.ID)
-			log.Println(msg)
+	w := m.TaskWorkerMap[t.ID]
+	if w == "" {
+		msg := fmt.Sprintf("Task %s is not assigned to any worker\n", t.ID)
+		log.Println(msg)
 
-			return errors.New(msg)
-		}
+		return errors.New(msg)
+	}
 
-		hostPort := getHostPort(t.HostPorts)
-		if hostPort == nil {
-			msg := fmt.Sprintf("Task %s has no host port assigned for health check\n", t.ID)
-			log.Println(msg)
+	hostPort := getHostPort(t.HostPorts)
+	if hostPort == nil {
+		msg := fmt.Sprintf("Task %s has no host port assigned for health check\n", t.ID)
+		log.Println(msg)
 
-			return errors.New(msg)
-		}
-		worker := strings.Split(w, ":")
-		url := fmt.Sprintf("http://%s:%s%s",
-			worker[0], *hostPort, t.HealthCheck)
-		log.Printf("Calling health check for task %s: %s\n", t.ID, url)
-		resp, err := http.Get(url)
-		if err != nil {
-			msg := fmt.Sprintf("Error connecting to health check %s", url)
-			log.Println(msg)
-			return errors.New(msg)
-		}
+		return errors.New(msg)
+	}
+	worker := strings.Split(w, ":")
+	url := fmt.Sprintf("http://%s:%s%s",
+		worker[0], *hostPort, t.HealthCheck)
+	log.Printf("Calling health check for task %s: %s\n", t.ID, url)
+	resp, err := http.Get(url)
+	if err != nil {
+		msg := fmt.Sprintf("Error connecting to health check %s", url)
+		log.Println(msg)
+		return errors.New(msg)
+	}
 
-		if resp.StatusCode != http.StatusOK {
-			msg := fmt.Sprintf("Error health check for task %s did not return 200\n", t.ID)
-			log.Println(msg)
-			return errors.New(msg)
-		}
+	if resp.StatusCode != http.StatusOK {
+		msg := fmt.Sprintf("Error health check for task %s did not return 200\n", t.ID)
+		log.Println(msg)
+		return errors.New(msg)
+	}
 
-		log.Printf("Task %s health check response: %v\n", t.ID, resp.StatusCode)
+	log.Printf("Task %s health check response: %v\n", t.ID, resp.StatusCode)
 
-		return nil
+	return nil
 }
 
 func getHostPort(ports network.PortMap) *string {
@@ -336,10 +336,10 @@ func (m *Manager) restartTask(t *task.Task) {
 	m.TaskDb.Put(t.ID.String(), t)
 
 	te := task.TaskEvent{
-		ID:					uuid.New(),
-		State:			task.Running,
-		Timestamp: 	time.Now(),
-		Task:				*t,
+		ID:        uuid.New(),
+		State:     task.Running,
+		Timestamp: time.Now(),
+		Task:      *t,
 	}
 	data, err := json.Marshal(te)
 	if err != nil {

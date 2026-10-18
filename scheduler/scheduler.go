@@ -21,15 +21,15 @@ type Scheduler interface {
 }
 
 type RoundRobin struct {
-	Name				string
-	LastWorker	int
+	Name       string
+	LastWorker int
 }
 
 type Epvm struct {
-	Name 				string
+	Name string
 }
 
-func (r *RoundRobin) SelectCandidateNodes(t task.Task, nodes []*node.Node) []*node.Node{
+func (r *RoundRobin) SelectCandidateNodes(t task.Task, nodes []*node.Node) []*node.Node {
 	return nodes
 }
 
@@ -39,20 +39,20 @@ func (r *RoundRobin) Score(t task.Task, nodes []*node.Node) map[string]float64 {
 	if r.LastWorker+1 < len(nodes) {
 		newWorker = r.LastWorker + 1
 		r.LastWorker++
-		} else {
-			newWorker = 0
-			r.LastWorker = 0
-		}
-		
-		for idx, node := range nodes {
-			if idx == newWorker {
+	} else {
+		newWorker = 0
+		r.LastWorker = 0
+	}
+
+	for idx, node := range nodes {
+		if idx == newWorker {
 			nodeScores[node.Name] = 0.1
-			} else {
-				nodeScores[node.Name] = 1.0
-			}
+		} else {
+			nodeScores[node.Name] = 1.0
 		}
-		
-		return nodeScores
+	}
+
+	return nodeScores
 }
 
 func (r *RoundRobin) Pick(scores map[string]float64, candidates []*node.Node) *node.Node {
@@ -64,7 +64,7 @@ func (r *RoundRobin) Pick(scores map[string]float64, candidates []*node.Node) *n
 			lowestScore = scores[node.Name]
 			continue
 		}
-		
+
 		if scores[node.Name] < lowestScore {
 			bestNode = node
 			lowestScore = scores[node.Name]
@@ -77,7 +77,7 @@ func (r *RoundRobin) Pick(scores map[string]float64, candidates []*node.Node) *n
 func (e *Epvm) SelectCandidateNodes(t task.Task, nodes []*node.Node) []*node.Node {
 	var candidates []*node.Node
 	for node := range nodes {
-		if checkDisk(t, nodes[node].Disk - nodes[node].DiskAllocated) {
+		if checkDisk(t, nodes[node].Disk-nodes[node].DiskAllocated) {
 			candidates = append(candidates, nodes[node])
 		}
 	}
@@ -110,19 +110,19 @@ func (e *Epvm) Score(t task.Task, nodes []*node.Node) map[string]float64 {
 		memoryAllocated := float64(node.Stats.MemUsedKb()) + float64(node.MemoryAllocated)
 		memoryPercentAllocated := memoryAllocated / float64(node.Memory)
 
-		newMemPercent := (calculateLoad(memoryAllocated + float64(t.Memory/1000), float64(node.Memory)))
+		newMemPercent := (calculateLoad(memoryAllocated+float64(t.Memory/1000), float64(node.Memory)))
 
 		memCost := math.Pow(LIEB, newMemPercent) + math.Pow(LIEB,
-			(float64(node.TaskCount + 1))/maxJobs) -
+			(float64(node.TaskCount+1))/maxJobs) -
 			math.Pow(LIEB, memoryPercentAllocated) -
 			math.Pow(LIEB, float64(node.TaskCount)/float64(maxJobs))
 
-			cpuCost := math.Pow(LIEB, cpuLoad) +
+		cpuCost := math.Pow(LIEB, cpuLoad) +
 			math.Pow(LIEB, (float64(node.TaskCount+1))/maxJobs) -
 			math.Pow(LIEB, cpuLoad) -
 			math.Pow(LIEB, float64(node.TaskCount)/float64(maxJobs))
 
-			nodeScores[node.Name] = memCost + cpuCost
+		nodeScores[node.Name] = memCost + cpuCost
 	}
 	return nodeScores
 }

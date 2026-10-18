@@ -8,13 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/google/uuid"
+	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/network"
 	"github.com/moby/moby/client"
 )
-
 
 type Task struct {
 	ID            uuid.UUID
@@ -24,7 +23,7 @@ type Task struct {
 	Image         string
 	Memory        int64
 	Disk          int64
-	Cpu 					float64
+	Cpu           float64
 	ExposedPorts  network.PortSet
 	HostPorts     network.PortMap
 	PortBindings  map[string]string
@@ -76,13 +75,13 @@ type DockerInspectResponse struct {
 
 func NewConfig(t *Task) *Config {
 	return &Config{
-		Name:          	t.Name,
-		Image:         	t.Image,
-		RestartPolicy: 	t.RestartPolicy,
-		ExposedPorts: 	t.ExposedPorts,
-		Memory: 				t.Memory,
-		Disk: 					t.Disk,
-		Cpu: 						t.Cpu,
+		Name:          t.Name,
+		Image:         t.Image,
+		RestartPolicy: t.RestartPolicy,
+		ExposedPorts:  t.ExposedPorts,
+		Memory:        t.Memory,
+		Disk:          t.Disk,
+		Cpu:           t.Cpu,
 	}
 }
 

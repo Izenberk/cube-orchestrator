@@ -1,29 +1,29 @@
 package stats
 
 import (
-	"log"
 	"github.com/c9s/goprocinfo/linux"
+	"log"
 )
 
 type Stats struct {
-	MemStats		*linux.MemInfo
-	DiskStats		*linux.Disk
-	CpuStats		*linux.CPUStat
-	LoadStats		*linux.LoadAvg
-	TaskCount 	int
+	MemStats  *linux.MemInfo
+	DiskStats *linux.Disk
+	CpuStats  *linux.CPUStat
+	LoadStats *linux.LoadAvg
+	TaskCount int
 }
 
 type CPUStat struct {
-	Id 					string	`json:"id"`
-	User 				uint64	`json:"user"`
-	Nice				uint64	`json:"system"`
-	Idle				uint64	`json:"idle"`
-	IOWait			uint64	`json:"iowait"`
-	IRQ					uint64	`json:"irq"`
-	SoftIRQ			uint64	`json:"softirq"`
-	Steal				uint64	`json:"steal"`
-	Guest				uint64	`json:"guest"`
-	GuestNice		uint64	`json:"guest_nice"`
+	Id        string `json:"id"`
+	User      uint64 `json:"user"`
+	Nice      uint64 `json:"system"`
+	Idle      uint64 `json:"idle"`
+	IOWait    uint64 `json:"iowait"`
+	IRQ       uint64 `json:"irq"`
+	SoftIRQ   uint64 `json:"softirq"`
+	Steal     uint64 `json:"steal"`
+	Guest     uint64 `json:"guest"`
+	GuestNice uint64 `json:"guest_nice"`
 }
 
 // Memory metrics
@@ -72,10 +72,10 @@ func (s *Stats) CpuUsage() float64 {
 
 func GetStats() *Stats {
 	return &Stats{
-		MemStats:		GetmemoryInfo(),
-		DiskStats: 	GetDiskInfo(),
-		CpuStats: 	GetCpuStats(),
-		LoadStats: 	GetLoadAvg(),
+		MemStats:  GetmemoryInfo(),
+		DiskStats: GetDiskInfo(),
+		CpuStats:  GetCpuStats(),
+		LoadStats: GetLoadAvg(),
 	}
 }
 
@@ -109,7 +109,7 @@ func GetCpuStats() *linux.CPUStat {
 	return &stats.CPUStatAll
 }
 
-func GetLoadAvg() *linux.LoadAvg{
+func GetLoadAvg() *linux.LoadAvg {
 	loadavg, err := linux.ReadLoadAvg("/proc/loadavg")
 	if err != nil {
 		log.Printf("Error reading from /proc/loadavg")

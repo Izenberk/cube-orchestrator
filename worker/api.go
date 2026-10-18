@@ -8,15 +8,15 @@ import (
 )
 
 type Api struct {
-	Address 		string
-	Port 				int
-	Worker			*Worker
-	Router			*chi.Mux
+	Address string
+	Port    int
+	Worker  *Worker
+	Router  *chi.Mux
 }
 
 type ErrResponse struct {
-	HTTPStatusCode		int 		`json:"http_status_code"`
-	Message 					string 	`json:"message"`
+	HTTPStatusCode int    `json:"http_status_code"`
+	Message        string `json:"message"`
 }
 
 func (a *Api) initRouter() {

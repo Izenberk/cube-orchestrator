@@ -13,30 +13,30 @@ import (
 )
 
 type Node struct {
-	Name						string
-	Ip							string
-	Api 						string
-	Cores						int64
-	Memory					int64
-	MemoryAllocated	int64
-	Disk						int64
-	DiskAllocated		int64
-	Stats 					stats.Stats
-	Role						string
-	TaskCount				int
+	Name            string
+	Ip              string
+	Api             string
+	Cores           int64
+	Memory          int64
+	MemoryAllocated int64
+	Disk            int64
+	DiskAllocated   int64
+	Stats           stats.Stats
+	Role            string
+	TaskCount       int
 }
 
 func NewNode(name string, api string, role string) *Node {
 	return &Node{
 		Name: name,
-		Api:	api,
+		Api:  api,
 		Role: role,
 	}
 }
 
 func (n *Node) GetStats() (*stats.Stats, error) {
-	var resp	*http.Response
-	var err		error
+	var resp *http.Response
+	var err error
 
 	url := fmt.Sprintf("%s/stats", n.Api)
 	resp, err = utils.HTTPWithRetry(http.Get, url)

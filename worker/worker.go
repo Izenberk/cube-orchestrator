@@ -13,26 +13,26 @@ import (
 )
 
 type Worker struct {
-	Name				string
-	Queue 			queue.Queue
-	Db 					store.Store
-	TaskCount		int
-	Stats 			*stats.Stats
+	Name      string
+	Queue     queue.Queue
+	Db        store.Store
+	TaskCount int
+	Stats     *stats.Stats
 }
 
 func (w *Worker) CollectStats() {
 	for {
-			log.Println("Collection stats")
-			w.Stats = stats.GetStats()
-			w.Stats.TaskCount = w.TaskCount
-			time.Sleep(15 * time.Second)
+		log.Println("Collection stats")
+		w.Stats = stats.GetStats()
+		w.Stats.TaskCount = w.TaskCount
+		time.Sleep(15 * time.Second)
 	}
 }
 
 func New(name string, taskDbType string) *Worker {
 	w := Worker{
-		Name: 	name,
-		Queue: 	*queue.New(),
+		Name:  name,
+		Queue: *queue.New(),
 	}
 
 	var s store.Store
@@ -83,20 +83,20 @@ func (w *Worker) runTask() task.DockerResult {
 	var dockerResult task.DockerResult
 	if task.ValidStateTransition(
 		taskPersisted.State, taskQueued.State) {
-			switch taskQueued.State {
-			case task.Scheduled:
-				dockerResult = w.StartTask(taskQueued)
-			case task.Completed:
-				dockerResult = w.StopTask(taskQueued)
-			default:
-				dockerResult.Error = errors.New("We should not get here")
-			}
-		} else {
-			err := fmt.Errorf("Invalid transition from %v to %v", taskPersisted.State, taskQueued.State)
-			dockerResult.Error = err
+		switch taskQueued.State {
+		case task.Scheduled:
+			dockerResult = w.StartTask(taskQueued)
+		case task.Completed:
+			dockerResult = w.StopTask(taskQueued)
+		default:
+			dockerResult.Error = errors.New("We should not get here")
 		}
+	} else {
+		err := fmt.Errorf("Invalid transition from %v to %v", taskPersisted.State, taskQueued.State)
+		dockerResult.Error = err
+	}
 
-		return dockerResult
+	return dockerResult
 }
 
 func (w *Worker) RunTasks() {

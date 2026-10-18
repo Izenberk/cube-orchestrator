@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 func (a *Api) StartTaskHandler(w http.ResponseWriter, r *http.Request) {
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
@@ -23,9 +22,9 @@ func (a *Api) StartTaskHandler(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("Error unmarshalling body: %v\n", err)
 		log.Printf("%s", msg)
 		w.WriteHeader(http.StatusBadRequest)
-		e := ErrResponse {
+		e := ErrResponse{
 			HTTPStatusCode: http.StatusBadRequest,
-			Message: 				msg,
+			Message:        msg,
 		}
 		json.NewEncoder(w).Encode(e)
 		return
@@ -84,9 +83,9 @@ func (a *Api) StopTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	te := task.TaskEvent{
-		ID: 				uuid.New(),
-		State: 			task.Completed,
-		Timestamp: 	time.Now(),
+		ID:        uuid.New(),
+		State:     task.Completed,
+		Timestamp: time.Now(),
 	}
 	taskCopy := *taskToStop.(*task.Task)
 	taskCopy.State = task.Completed

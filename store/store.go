@@ -99,10 +99,10 @@ func (i *InMemoryTaskEventStore) Count() (int, error) {
 }
 
 type TaskStore struct {
-	Db					*bolt.DB
-	DbFile			string
-	FileMode		os.FileMode
-	Bucket 			string
+	Db       *bolt.DB
+	DbFile   string
+	FileMode os.FileMode
+	Bucket   string
 }
 
 func NewTaskStore(file string, mode os.FileMode, bucket string) (*TaskStore, error) {
@@ -111,10 +111,10 @@ func NewTaskStore(file string, mode os.FileMode, bucket string) (*TaskStore, err
 		return nil, fmt.Errorf("unable to open %v", file)
 	}
 	t := TaskStore{
-		DbFile: 	file,
+		DbFile:   file,
 		FileMode: mode,
-		Db: 			db,
-		Bucket: 	bucket,
+		Db:       db,
+		Bucket:   bucket,
 	}
 
 	err = t.CreateBucket()
@@ -215,10 +215,10 @@ func (t *TaskStore) List() (interface{}, error) {
 }
 
 type EventStore struct {
-	DbFile			string
-	FileMode 		os.FileMode
-	Db 					*bolt.DB
-	Bucket  		string
+	DbFile   string
+	FileMode os.FileMode
+	Db       *bolt.DB
+	Bucket   string
 }
 
 func NewEventStore(file string, mode os.FileMode, bucket string) (*EventStore, error) {
@@ -227,10 +227,10 @@ func NewEventStore(file string, mode os.FileMode, bucket string) (*EventStore, e
 		return nil, fmt.Errorf("unable to open %v", file)
 	}
 	e := EventStore{
-		DbFile: 		file,
-		FileMode: 	mode,
-		Db: 				db,
-		Bucket: 		bucket,
+		DbFile:   file,
+		FileMode: mode,
+		Db:       db,
+		Bucket:   bucket,
 	}
 
 	err = e.CreateBucket()

@@ -1,17 +1,15 @@
 package worker
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"encoding/json"
 	"net/http"
 
 	"github.com/Izenberk/cube-orchestrator/task"
-	"github.com/google/uuid"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
-
-
 
 func (a *Api) GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -30,8 +28,8 @@ func (a *Api) StartTaskHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s", msg)
 		w.WriteHeader(400)
 		e := ErrResponse{
-			HTTPStatusCode: 	400,
-			Message:					msg,
+			HTTPStatusCode: 400,
+			Message:        msg,
 		}
 		json.NewEncoder(w).Encode(e)
 		return

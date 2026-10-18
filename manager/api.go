@@ -7,17 +7,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-
 type Api struct {
-	Address		string
-	Port			int
-	Manager		*Manager
-	Router		*chi.Mux
+	Address string
+	Port    int
+	Manager *Manager
+	Router  *chi.Mux
 }
 
 type ErrResponse struct {
-	HTTPStatusCode		int 		`json:"http_status_code"`
-	Message 					string 	`json:"message"`
+	HTTPStatusCode int    `json:"http_status_code"`
+	Message        string `json:"message"`
 }
 
 func (a *Api) initRouter() {
