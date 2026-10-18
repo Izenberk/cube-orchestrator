@@ -116,14 +116,14 @@ flowchart TD
 
 ## System Components
 
-- **[`task/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/task/)**: Defines task configurations, container specifications, finite states, transition rules, and the Docker runtime interface wrapper built on the modern Moby SDK.
-- **[`worker/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/worker/)**: Runs on each worker node. Maintains an in-memory queue, runs the container execution loop, synchronizes container inspect data, tracks local state, and serves the worker REST API.
-- **[`manager/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/manager/)**: The central brain. Accepts incoming tasks, evaluates candidate worker nodes via the selected scheduler, dispatches tasks, aggregates cluster state, and runs continuous health check and recovery loops.
-- **[`scheduler/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/scheduler/)**: Implements node selection algorithms (`SelectCandidateNodes`, `Score`, and `Pick`) to balance workloads across the cluster.
-- **[`node/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/node/)**: Abstraction representing physical or virtual machines, storing resource limits (cores, RAM, disk), allocated capacities, and fetching real-time metrics with retry logic.
-- **[`store/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/store/)**: Persistence layer abstraction implementing key-value operations (`Put`, `Get`, `List`, `Count`) backed by either fast in-memory maps or embedded BoltDB files.
-- **[`stats/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/stats/)**: Low-level Linux performance collector reading `/proc/stat`, `/proc/meminfo`, `/proc/loadavg`, and `/proc/diskstats`.
-- **[`cmd/`](file:///home/izenberk/Desktop/projects/cube-orchestrator/cmd/)**: Command-line interface built with Cobra, providing operations for running nodes and managing tasks.
+- **[`task/`](task/)**: Defines task configurations, container specifications, finite states, transition rules, and the Docker runtime interface wrapper built on the modern Moby SDK.
+- **[`worker/`](worker/)**: Runs on each worker node. Maintains an in-memory queue, runs the container execution loop, synchronizes container inspect data, tracks local state, and serves the worker REST API.
+- **[`manager/`](manager/)**: The central brain. Accepts incoming tasks, evaluates candidate worker nodes via the selected scheduler, dispatches tasks, aggregates cluster state, and runs continuous health check and recovery loops.
+- **[`scheduler/`](scheduler/)**: Implements node selection algorithms (`SelectCandidateNodes`, `Score`, and `Pick`) to balance workloads across the cluster.
+- **[`node/`](node/)**: Abstraction representing physical or virtual machines, storing resource limits (cores, RAM, disk), allocated capacities, and fetching real-time metrics with retry logic.
+- **[`store/`](store/)**: Persistence layer abstraction implementing key-value operations (`Put`, `Get`, `List`, `Count`) backed by either fast in-memory maps or embedded BoltDB files.
+- **[`stats/`](stats/)**: Low-level Linux performance collector reading `/proc/stat`, `/proc/meminfo`, `/proc/loadavg`, and `/proc/diskstats`.
+- **[`cmd/`](cmd/)**: Command-line interface built with Cobra, providing operations for running nodes and managing tasks.
 
 ---
 
