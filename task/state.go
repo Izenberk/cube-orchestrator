@@ -1,10 +1,15 @@
 package task
 
+import "fmt"
+
 type State int
 
 var stateNames = [...]string{"Pending", "Scheduled", "Running", "Completed", "Failed"}
 
 func (s State) String() string {
+	if s < 0 || int(s) >= len(stateNames) {
+		return fmt.Sprintf("State(%d)", int(s))
+	}
 	return stateNames[s]
 }
 
